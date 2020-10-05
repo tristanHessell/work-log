@@ -25,7 +25,7 @@ function App(): JSX.Element {
     ]);
   }
 
-  function onClickClearCurrent(e: any, item: Partial<TravelItem>) {
+  function onClickClearCurrent(e: any, item: Partial<TravelItem>): void {
     setCurrentItem({
       id: item.id,
       startingOdometer: 0,
@@ -91,11 +91,13 @@ function App(): JSX.Element {
           <input disabled value={item.start.name} readOnly />
           <input disabled value={item.end.name} readOnly />
           <input disabled value={item.distance} readOnly />
-          <button onClick={(e) => onClickDeleteItem(e, item)}>Delete</button>
+          <button onClick={(e: any): unknown => onClickDeleteItem(e, item)}>
+            Delete
+          </button>
         </div>
       ))}
       <button
-        onClick={(e) => onClickAddNew(e, currentItem)}
+        onClick={(e: any): unknown => onClickAddNew(e, currentItem)}
         disabled={!currentItem.start || !currentItem.end}
       >
         (Save and) Start new
@@ -106,9 +108,15 @@ function App(): JSX.Element {
           type="number"
           value={currentItem.startingOdometer}
           placeholder="Starting odometer reading"
-          onChange={(e) => onChangeOdometer(e, currentItem)}
+          onChange={(e): void => {
+            onChangeOdometer(e, currentItem);
+          }}
         />
-        <button onClick={(e) => onClickStartPlace(e, currentItem)}>
+        <button
+          onClick={(e): void => {
+            onClickStartPlace(e, currentItem);
+          }}
+        >
           Get Start Location
         </button>
         <input
@@ -116,7 +124,7 @@ function App(): JSX.Element {
           placeholder="Start Location"
           readOnly
         />
-        <button onClick={(e) => onClickEndPlace(e, currentItem)}>
+        <button onClick={(e: any): unknown => onClickEndPlace(e, currentItem)}>
           Get End Location
         </button>
         <input
@@ -125,7 +133,7 @@ function App(): JSX.Element {
           readOnly
         />
         <input value={currentItem.distance || 0} readOnly />
-        <button onClick={(e) => onClickClearCurrent(e, currentItem)}>
+        <button onClick={(e): unknown => onClickClearCurrent(e, currentItem)}>
           Clear
         </button>
       </div>
