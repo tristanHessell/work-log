@@ -11,4 +11,3 @@ export interface TravelItem {
   end: Place;
   distance?: number;
 }
-
