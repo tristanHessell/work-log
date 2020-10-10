@@ -56,6 +56,7 @@
     "resolve-url-loader": "3.1.1",
     "sass-loader": "8.0.2",
     "semver": "6.3.0",
+    "serve": "^11.3.2",
     "style-loader": "0.23.1",
     "terser-webpack-plugin": "2.3.8",
     "ts-pnp": "1.1.6",
@@ -68,7 +69,8 @@
     "workbox-webpack-plugin": "4.3.1"
   },
   "scripts": {
-    "start": "node scripts/start.js",
+    "start-dev": "node scripts/start.js",
+    "start": "serve -s build/",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js"
   },

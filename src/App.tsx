@@ -79,6 +79,7 @@ function App(): JSX.Element {
     });
   }
 
+  //start with the focus on the starting odometer input
   useEffect(() => {
     startingOdoRef.current?.focus();
   });
