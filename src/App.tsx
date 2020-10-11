@@ -1,21 +1,32 @@
 import React, { useState, useRef, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import { Place, TravelItem } from "./types";
-import { getPlace, getDistance } from "./api";
+import {
+  getPlace,
+  getDistance,
+  deleteTravelItem,
+  saveTravelItem,
+  fetchTravelItemsByDay,
+} from "./api";
+import { DateTime } from "luxon";
 import "./App.css";
 
 // TODO
-// make it so you can delete a time entry and the times follow on
-// make it so the time entries are saved use google cloud
-// ensure API key isnt inside version control
+// make it so the time entries are saved/deleted/fetched use google cloud
+// save the entries locally (session) until they are confirmed to be saved to backend
 
 function App(): JSX.Element {
+  const [currentDate, setCurrentDate] = useState<DateTime>(() =>
+    DateTime.local()
+  );
   const [travelItems, setTravelItems] = useState<TravelItem[]>([]);
   const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>({
     id: uuid(),
     startingOdometer: 0,
   });
   const startingOdoRef = useRef<HTMLInputElement>(null);
+  const isTodaysDate =
+    Math.abs(currentDate.diffNow("days").days) < 1;
 
   function onClickDeleteItem(e: any, item: TravelItem): void {
     const itemIndex = travelItems.indexOf(item);
@@ -23,6 +34,10 @@ function App(): JSX.Element {
       ...travelItems.slice(0, itemIndex),
       ...travelItems.slice(itemIndex + 1),
     ]);
+
+    deleteTravelItem(item.id).then(() => {
+      // TODO
+    });
   }
 
   function onClickClearCurrent(e: any, item: Partial<TravelItem>): void {
@@ -33,13 +48,18 @@ function App(): JSX.Element {
     startingOdoRef.current?.focus();
   }
 
-  function onClickAddNew(e: any, item: Partial<TravelItem>): void {
+  function onClickAddNew(e: any, item: TravelItem): void {
     // add the currrent item to the list
-    setTravelItems([...travelItems, item as TravelItem]);
+    setTravelItems([...travelItems, item]);
     // change he current item to a new one
     setCurrentItem({
       id: uuid(),
       startingOdometer: item.startingOdometer || 0,
+    });
+    startingOdoRef.current?.focus();
+
+    saveTravelItem(item).then(() => {
+      // TODO
     });
   }
 
@@ -82,10 +102,37 @@ function App(): JSX.Element {
   //start with the focus on the starting odometer input
   useEffect(() => {
     startingOdoRef.current?.focus();
-  });
+  }, []);
+
+  async function onClickDecrementCurrentDay(): Promise<void> {
+    const newCurrentDate = currentDate.minus({ days: 1 });
+    setCurrentDate(newCurrentDate);
+    fetchTravelItemsByDay(newCurrentDate.toFormat("yyyymmdd")).then(
+      (newItems: TravelItem[]) => {
+        setTravelItems(newItems);
+      }
+    );
+  }
+
+  async function onClickIncrementCurrentDay(): Promise<void> {
+    const newCurrentDate = currentDate.plus({ days: 1 });
+    setCurrentDate(newCurrentDate);
+    fetchTravelItemsByDay(newCurrentDate.toFormat("yyyymmdd")).then(
+      (newItems: TravelItem[]) => {
+        setTravelItems(newItems);
+      }
+    );
+  }
 
   return (
     <div className="App">
+      <div>
+        <button onClick={onClickDecrementCurrentDay}>&lt;</button>
+        {currentDate.toLocaleString()}
+        <button onClick={onClickIncrementCurrentDay} disabled={isTodaysDate}>
+          &gt;
+        </button>
+      </div>
       {travelItems.map((item) => (
         <div key={item.id}>
           <input type="number" value={item.startingOdometer} readOnly />
@@ -97,16 +144,11 @@ function App(): JSX.Element {
           </button>
         </div>
       ))}
-      <button
-        onClick={(e: any): unknown => onClickAddNew(e, currentItem)}
-        disabled={!currentItem.start || !currentItem.end}
-      >
-        (Save and) Start new
-      </button>
       <div>
         <input
           ref={startingOdoRef}
           type="number"
+          min="0"
           value={currentItem.startingOdometer}
           placeholder="Starting odometer reading"
           onChange={(e): void => {
@@ -138,6 +180,13 @@ function App(): JSX.Element {
           Clear
         </button>
       </div>
+      <button
+        onClick={(e: any): unknown => onClickAddNew(e, currentItem as TravelItem)}
+        disabled={!currentItem.start || !currentItem.end}
+      >
+        (Save and) Start new
+      </button>
+      <pre>{JSON.stringify(currentItem, null, 2)}</pre>
     </div>
   );
 }

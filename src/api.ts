@@ -1,7 +1,8 @@
 /* globals google */
-import { Place } from "./types";
+import { Place, TravelItem } from "./types";
 
 // https://developers.google.com/maps/documentation/javascript/distancematrix#distance_matrix_requests
+/* */
 export async function getDistance(start: Place, end: Place): Promise<number> {
   return new Promise((resolve) => {
     const origin = new google.maps.LatLng(start.latitude, start.longitude);
@@ -31,6 +32,7 @@ interface Coordinates {
   longitude: number;
 }
 
+/* */
 async function getCoordinates(): Promise<Coordinates> {
   return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
@@ -46,6 +48,7 @@ async function getCoordinates(): Promise<Coordinates> {
 }
 
 // https://developers.google.com/maps/documentation/javascript/geocoding
+/* */
 export async function getPlace(): Promise<Place> {
   const coords = await getCoordinates();
 
@@ -75,4 +78,29 @@ export async function getPlace(): Promise<Place> {
       }
     );
   });
+}
+
+export async function fetchTravelItemsByDay(
+  date: string
+): Promise<TravelItem[]> {
+  console.log(date);
+  // TODO
+  return [];
+}
+
+/* */
+export async function saveTravelItem(item: TravelItem): Promise<void> {
+  try {
+    // TODO
+  } catch (e) {
+    //
+  }
+}
+
+export async function deleteTravelItem(id: string): Promise<void> {
+  try {
+    // TODO
+  } catch (e) {
+    //
+  }
 }

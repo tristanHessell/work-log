@@ -10,4 +10,5 @@ export interface TravelItem {
   start: Place;
   end: Place;
   distance?: number;
+  createdDate: string; // effective date YYYYMMDD
 }
