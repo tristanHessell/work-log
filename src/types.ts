@@ -2,6 +2,7 @@ export interface Place {
   name: string;
   latitude: number;
   longitude: number;
+  accuracy: number; // used for debugging
 }
 
 export interface TravelItem {

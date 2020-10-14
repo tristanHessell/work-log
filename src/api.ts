@@ -30,6 +30,7 @@ export async function getDistance(start: Place, end: Place): Promise<number> {
 interface Coordinates {
   latitude: number;
   longitude: number;
+  accuracy: number;
 }
 
 /* */
@@ -73,6 +74,7 @@ export async function getPlace(): Promise<Place> {
             name,
             latitude: coords.latitude,
             longitude: coords.longitude,
+            accuracy: coords.accuracy,
           });
         }
       }
