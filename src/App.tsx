@@ -25,8 +25,7 @@ function App(): JSX.Element {
     startingOdometer: 0,
   });
   const startingOdoRef = useRef<HTMLInputElement>(null);
-  const isTodaysDate =
-    Math.abs(currentDate.diffNow("days").days) < 1;
+  const isTodaysDate = Math.abs(currentDate.diffNow("days").days) < 1;
 
   function onClickDeleteItem(e: any, item: TravelItem): void {
     const itemIndex = travelItems.indexOf(item);
@@ -181,7 +180,9 @@ function App(): JSX.Element {
         </button>
       </div>
       <button
-        onClick={(e: any): unknown => onClickAddNew(e, currentItem as TravelItem)}
+        onClick={(e: any): unknown =>
+          onClickAddNew(e, currentItem as TravelItem)
+        }
         disabled={!currentItem.start || !currentItem.end}
       >
         (Save and) Start new
