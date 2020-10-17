@@ -1,5 +1,6 @@
 /* globals google */
 import { Place, TravelItem } from "./types";
+import { saveItem, getItems } from './db';
 
 // https://developers.google.com/maps/documentation/javascript/distancematrix#distance_matrix_requests
 /* */
@@ -77,18 +78,14 @@ export async function getPlace(): Promise<Place> {
   });
 }
 
-export async function fetchTravelItemsByDay(
-  date: string
-): Promise<TravelItem[]> {
-  console.log(date);
-  // TODO
-  return [];
+export async function fetchTravelItems(): Promise<TravelItem[]> {
+  return getItems<TravelItem>('travelItems');
 }
 
 /* */
 export async function saveTravelItem(item: TravelItem): Promise<void> {
   try {
-    // TODO
+    await saveItem('travelItems', item);
   } catch (e) {
     //
   }
