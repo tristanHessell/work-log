@@ -1,15 +1,18 @@
-import * as firebase from 'firebase';
+import * as firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/database';
 
 firebase.initializeApp({
-  apiKey: 'AIzaSyCO9y5bbOPzmgPypyjwS5HkogHwd0iRHvU',
-  authDomain: 'totemic-polygon-291511.firebaseapp.com',
-  projectId: 'totemic-polygon-291511',
+  apiKey: "AIzaSyCO9y5bbOPzmgPypyjwS5HkogHwd0iRHvU",
+  authDomain: "totemic-polygon-291511.firebaseapp.com",
+  databaseURL: "https://totemic-polygon-291511.firebaseio.com",
+  projectId: "totemic-polygon-291511",
+  storageBucket: "totemic-polygon-291511.appspot.com",
+  messagingSenderId: "987927113868",
+  appId: "1:987927113868:web:64e80b9823e9873c938ba9"
 });
 
 const db = firebase.firestore();
-db.collection('');
 
 export async function saveItem (collection: string, item: Record<string, any>): Promise<void> {
   try {

@@ -106,7 +106,7 @@ function App(): JSX.Element {
   async function onClickDecrementCurrentDay(): Promise<void> {
     const newCurrentDate = currentDate.minus({ days: 1 });
     setCurrentDate(newCurrentDate);
-    fetchTravelItems(newCurrentDate.toFormat("yyyymmdd")).then(
+    fetchTravelItems().then(
       (newItems: TravelItem[]) => {
         setTravelItems(newItems);
       }
@@ -116,7 +116,7 @@ function App(): JSX.Element {
   async function onClickIncrementCurrentDay(): Promise<void> {
     const newCurrentDate = currentDate.plus({ days: 1 });
     setCurrentDate(newCurrentDate);
-    fetchTravelItems(newCurrentDate.toFormat("yyyymmdd")).then(
+    fetchTravelItems().then(
       (newItems: TravelItem[]) => {
         setTravelItems(newItems);
       }

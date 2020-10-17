@@ -114,7 +114,7 @@ export function getAccurateCurrentPosition(
   let lastCheckedPosition: Position;
   let locationEventCount = 0;
 
-  if (!options.maxWait) options.maxWait = 10000; // Default 10 seconds
+  if (!options.maxWait) options.maxWait = 6000; // Default 10 seconds
   if (!options.timeout) options.timeout = options.maxWait; // Default to maxWait
 
   options.maximumAge = 0; // Force current locations only
