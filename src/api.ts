@@ -1,9 +1,8 @@
 /* globals google */
 import { Place, TravelItem } from "./types";
-import { saveItem, getItems } from './db';
+import { saveItem, getItems, deleteItem } from "./db";
 
 // https://developers.google.com/maps/documentation/javascript/distancematrix#distance_matrix_requests
-/* */
 export async function getDistance(start: Place, end: Place): Promise<number> {
   return new Promise((resolve) => {
     const origin = new google.maps.LatLng(start.latitude, start.longitude);
@@ -30,17 +29,11 @@ export async function getDistance(start: Place, end: Place): Promise<number> {
 
 /* */
 async function getCoordinates(): Promise<Coordinates> {
-  return new Promise((resolve) => {
-    // navigator.geolocation.getCurrentPosition(
-    //   async ({ coords }) => {
-    //     resolve(coords);
-    //   },
-    //   () => {
-    //     /* TODO */
-    //   },
-    //   { enableHighAccuracy: true }
-    // );
-    getAccurateCurrentPosition((position: Position) => resolve(position.coords), () => {/**/}, () => {/**/});
+  return new Promise((resolve, reject) => {
+    getAccurateCurrentPosition(
+      (position: Position) => resolve(position.coords),
+      (error: PositionError | Error) => reject(error)
+    );
   });
 }
 
@@ -51,6 +44,7 @@ export async function getPlace(): Promise<Place> {
 
   return new Promise((resolve) => {
     const geocoder: google.maps.Geocoder = new google.maps.Geocoder();
+
     geocoder.geocode(
       {
         location: new google.maps.LatLng(coords.latitude, coords.longitude),
@@ -79,46 +73,57 @@ export async function getPlace(): Promise<Place> {
 }
 
 export async function fetchTravelItems(): Promise<TravelItem[]> {
-  return getItems<TravelItem>('travelItems');
+  return getItems<TravelItem>("travelItems");
 }
 
 /* */
 export async function saveTravelItem(item: TravelItem): Promise<void> {
   try {
-    await saveItem('travelItems', item);
+    await saveItem("travelItems", item.id, item);
   } catch (e) {
-    //
+    // TODO
   }
 }
 
 export async function deleteTravelItem(id: string): Promise<void> {
   try {
-    // TODO
+    await deleteItem("travelItems", id);
   } catch (e) {
-    //
+    // TODO
   }
 }
 
-type AccuratePositionOptions= Partial<PositionOptions & {
+type AccuratePositionOptions = PositionOptions & {
   maxWait: number;
   timeout: number;
-}>;
+  accuracy: number;
+};
+
+function getAccuratePositionOptions(
+  options: Partial<AccuratePositionOptions>
+): AccuratePositionOptions {
+  const maxWait = options.maxWait || 6000;
+  return {
+    ...options,
+    maxWait,
+    timeout: options.timeout || maxWait,
+    accuracy: options.accuracy || 20,
+    maximumAge: 0,
+    enableHighAccuracy: true,
+  };
+}
+
+type GenericErrorHandler = (error: Error) => void;
 
 // https://github.com/gregsramblings/getAccurateCurrentPosition/blob/master/geo.js
 export function getAccurateCurrentPosition(
   geolocationSuccess: PositionCallback,
-  geolocationError: PositionErrorCallback,
-  geoprogress: PositionCallback,
-  options: AccuratePositionOptions = {}
+  geolocationError: (error: Error | PositionError) => void,
+  opts: Partial<AccuratePositionOptions> = {}
 ): void {
-  let lastCheckedPosition: Position;
   let locationEventCount = 0;
 
-  if (!options.maxWait) options.maxWait = 6000; // Default 10 seconds
-  if (!options.timeout) options.timeout = options.maxWait; // Default to maxWait
-
-  options.maximumAge = 0; // Force current locations only
-  options.enableHighAccuracy = true; // Force high accuracy (otherwise, why are you using this function?)
+  const options = getAccuratePositionOptions(opts);
 
   const watchID = navigator.geolocation.watchPosition(
     checkLocation,
@@ -127,35 +132,33 @@ export function getAccurateCurrentPosition(
   );
   const timerID = setTimeout(stopTrying, options.maxWait); // Set a timeout that will abandon the location loop
 
-  function foundPosition  (position: Position): void {
+  function foundPosition(position: Position): void {
     geolocationSuccess(position);
-  };
+  }
 
-  function checkLocation (position: Position): void {
-    lastCheckedPosition = position;
+  function checkLocation(position: Position): void {
     locationEventCount = locationEventCount + 1;
     // We ignore the first event unless it's the only one received because some devices seem to send a cached
-    // location even when maxaimumAge is set to zero
+    // location even when maximumAge is set to zero
     if (
-      position.coords.accuracy <= 20 &&
+      position.coords.accuracy <= options.accuracy &&
       locationEventCount > 1
     ) {
       clearTimeout(timerID);
       navigator.geolocation.clearWatch(watchID);
       foundPosition(position);
-    } else {
-      geoprogress(position);
     }
-  };
+  }
 
-  function stopTrying (): void {
+  // if you cant get a location within the correct range
+  function stopTrying(): void {
     navigator.geolocation.clearWatch(watchID);
-    foundPosition(lastCheckedPosition);
-  };
+    geolocationError(new Error("could not get accurate position"));
+  }
 
-  function onError  (error: PositionError): void {
+  function onError(error: PositionError): void {
     clearTimeout(timerID);
     navigator.geolocation.clearWatch(watchID);
     geolocationError(error);
-  };
+  }
 }

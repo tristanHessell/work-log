@@ -12,8 +12,34 @@ import { DateTime } from "luxon";
 import "./App.css";
 
 // TODO
-// make it so the time entries are saved/deleted/fetched use google cloud
+// make it so the time entries are deleted use google cloud
 // save the entries locally (session) until they are confirmed to be saved to backend
+
+type Requested<T = Record<string, unknown>, E = Error> =
+  | { type: "Entity"; entity?: T }
+  | { type: "Loading" }
+  | { type: "Error"; error: E };
+
+interface PlaceProps {
+  itemMeta: Requested<Place>;
+  children: React.ReactNode;
+}
+
+const PlaceInput: React.FC<PlaceProps> = ({ itemMeta, children }) => {
+  switch(itemMeta.type) {
+    case "Loading": {
+      return <>LOADING</>
+    }
+    case "Entity": {
+      return <>{children}</>;
+    }
+    case "Error": {
+      return <>Error</>;
+    }
+  }
+};
+
+const DEFAULT_REQUESTED: Requested<Place> = { type: "Entity" };
 
 function App(): JSX.Element {
   const [currentDate, setCurrentDate] = useState<DateTime>(() =>
@@ -26,6 +52,8 @@ function App(): JSX.Element {
   });
   const startingOdoRef = useRef<HTMLInputElement>(null);
   const isTodaysDate = Math.abs(currentDate.diffNow("days").days) < 1;
+  const [startState, setStartState] = useState<Requested<Place>>(DEFAULT_REQUESTED);
+  const [endState, setEndState] = useState<Requested<Place>>(DEFAULT_REQUESTED);
 
   function onClickDeleteItem(e: any, item: TravelItem): void {
     const itemIndex = travelItems.indexOf(item);
@@ -44,6 +72,8 @@ function App(): JSX.Element {
       id: item.id,
       startingOdometer: 0,
     });
+    setStartState(DEFAULT_REQUESTED);
+    setEndState(DEFAULT_REQUESTED);
     startingOdoRef.current?.focus();
   }
 
@@ -76,26 +106,38 @@ function App(): JSX.Element {
     e: any,
     item: Partial<TravelItem>
   ): Promise<void> {
-    const start = await getPlace();
+    try {
+      setStartState({ type: "Loading" });
+      const start = await getPlace();
 
-    setCurrentItem({
-      ...item,
-      start,
-    });
+      setCurrentItem({
+        ...item,
+        start,
+      });
+      setStartState({ type: "Entity", entity: start });
+    } catch (err) {
+      setStartState({ type: "Error", error: err });
+    }
   }
 
   async function onClickEndPlace(
     e: any,
     item: Partial<TravelItem>
   ): Promise<void> {
-    const end = await getPlace();
-    const distance = await getDistance(item.start as Place, end);
+    try {
+      setEndState({ type: "Loading" });
+      const end = await getPlace();
+      const distance = await getDistance(item.start as Place, end);
 
-    setCurrentItem({
-      ...item,
-      end,
-      distance,
-    });
+      setCurrentItem({
+        ...item,
+        end,
+        distance,
+      });
+      setEndState({ type: "Entity", entity: end });
+    } catch (err) {
+      setEndState({ type: "Error", error: err });
+    }
   }
 
   //start with the focus on the starting odometer input
@@ -106,21 +148,17 @@ function App(): JSX.Element {
   async function onClickDecrementCurrentDay(): Promise<void> {
     const newCurrentDate = currentDate.minus({ days: 1 });
     setCurrentDate(newCurrentDate);
-    fetchTravelItems().then(
-      (newItems: TravelItem[]) => {
-        setTravelItems(newItems);
-      }
-    );
+    fetchTravelItems().then((newItems: TravelItem[]) => {
+      setTravelItems(newItems);
+    });
   }
 
   async function onClickIncrementCurrentDay(): Promise<void> {
     const newCurrentDate = currentDate.plus({ days: 1 });
     setCurrentDate(newCurrentDate);
-    fetchTravelItems().then(
-      (newItems: TravelItem[]) => {
-        setTravelItems(newItems);
-      }
-    );
+    fetchTravelItems().then((newItems: TravelItem[]) => {
+      setTravelItems(newItems);
+    });
   }
 
   return (
@@ -161,19 +199,15 @@ function App(): JSX.Element {
         >
           Get Start Location
         </button>
-        <input
-          value={currentItem.start?.name || ""}
-          placeholder="Start Location"
-          readOnly
-        />
+        <PlaceInput itemMeta={startState} >
+      <input value={currentItem.start?.name || ""} placeholder="Start Location" readOnly />
+      </PlaceInput>
         <button onClick={(e: any): unknown => onClickEndPlace(e, currentItem)}>
           Get End Location
         </button>
-        <input
-          value={currentItem.end?.name || ""}
-          placeholder="End Location"
-          readOnly
-        />
+        <PlaceInput itemMeta={endState} >
+      <input value={currentItem.end?.name || ""} placeholder="End Location" readOnly />
+        </PlaceInput>
         <input value={currentItem.distance || 0} readOnly />
         <button onClick={(e): unknown => onClickClearCurrent(e, currentItem)}>
           Clear
