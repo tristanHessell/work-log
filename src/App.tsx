@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import React, { useState, useRef, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import { Place, TravelItem } from "./types";
@@ -38,6 +39,21 @@ const PlaceInput: React.FC<PlaceProps> = ({ itemMeta, children }) => {
     }
   }
 };
+
+function errorReplacer (key: string, value: unknown): unknown | Record<string, unknown> {
+    if (value instanceof Error) {
+      const error: Record<string, unknown> = {};
+
+        Object.getOwnPropertyNames(value).forEach(function (key) {
+          //@ts-ignore
+          error[key] = value[key];
+        });
+
+        return error;
+    }
+
+    return value;
+}
 
 const DEFAULT_REQUESTED: Requested<Place> = { type: "Entity" };
 
@@ -116,6 +132,7 @@ function App(): JSX.Element {
       });
       setStartState({ type: "Entity", entity: start });
     } catch (err) {
+      console.log(err, JSON.stringify(err));
       setStartState({ type: "Error", error: err });
     }
   }
@@ -221,7 +238,9 @@ function App(): JSX.Element {
       >
         (Save and) Start new
       </button>
-      <pre>{JSON.stringify(currentItem, null, 2)}</pre>
+      Current:<pre>{JSON.stringify(currentItem, errorReplacer, 2)}</pre>
+      Start:<pre>{JSON.stringify(startState, errorReplacer, 2)}</pre>
+      End:<pre>{JSON.stringify(endState, errorReplacer, 2)}</pre>
     </div>
   );
 }
