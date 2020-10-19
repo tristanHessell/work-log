@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import React, { useState, useRef, useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import { Place, TravelItem, GeolocationError } from "./types";
@@ -11,10 +10,6 @@ import {
 } from "./api";
 import { DateTime } from "luxon";
 import "./App.css";
-
-// TODO
-// make it so the time entries are deleted use google cloud
-// save the entries locally (session) until they are confirmed to be saved to backend
 
 type Requested<T = Record<string, unknown>, E = Error> =
   | { type: "Entity"; entity?: T }
@@ -47,9 +42,8 @@ function errorReplacer(
   if (value instanceof GeolocationError) {
     const error: Record<string, unknown> = {};
 
-    Object.getOwnPropertyNames(value).forEach(function (key) {
-      //@ts-ignore
-      error[key] = value[key];
+    Object.getOwnPropertyNames(value).forEach((key: string) => {
+      error[key] = value[key as keyof GeolocationError];
     });
 
     return error;
@@ -60,7 +54,9 @@ function errorReplacer(
 
 const DEFAULT_REQUESTED: Requested<Place> = { type: "Entity" };
 
-function getFromLocalStorage<T extends Record<string, unknown>> (key: string) : T | null {
+function getFromLocalStorage<T extends Record<string, unknown>>(
+  key: string
+): T | null {
   const item = localStorage.getItem(key);
   if (item) {
     return JSON.parse(item) as T;
@@ -74,10 +70,12 @@ function App(): JSX.Element {
     DateTime.local()
   );
   const [travelItems, setTravelItems] = useState<TravelItem[]>([]);
-  const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>(getFromLocalStorage<Partial<TravelItem>>('currentItem') || {
-    id: uuid(),
-    startingOdometer: 0,
-  });
+  const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>(
+    getFromLocalStorage<Partial<TravelItem>>("currentItem") || {
+      id: uuid(),
+      startingOdometer: 0,
+    }
+  );
   const startingOdoRef = useRef<HTMLInputElement>(null);
   const isTodaysDate = Math.abs(currentDate.diffNow("days").days) < 1;
   const [startState, setStartState] = useState<Requested<Place>>(
@@ -92,7 +90,7 @@ function App(): JSX.Element {
       ...travelItems.slice(itemIndex + 1),
     ]);
 
-    deleteTravelItem(item.id).then(() => {
+    deleteTravelItem(item.id, currentDate.toFormat("yyyyMMdd")).then(() => {
       // TODO
     });
   }
@@ -118,7 +116,7 @@ function App(): JSX.Element {
     });
     startingOdoRef.current?.focus();
 
-    saveTravelItem(item).then(() => {
+    saveTravelItem(item, DateTime.local().toFormat("yyyyMMdd")).then(() => {
       // TODO
       localStorage.removeItem("currentItem");
     });
@@ -181,22 +179,31 @@ function App(): JSX.Element {
   //start with the focus on the starting odometer input
   useEffect(() => {
     startingOdoRef.current?.focus();
+    fetchTravelItems(DateTime.local().toFormat("yyyyMMdd")).then(
+      (newItems: TravelItem[]) => {
+        setTravelItems(newItems);
+      }
+    );
   }, []);
 
   async function onClickDecrementCurrentDay(): Promise<void> {
     const newCurrentDate = currentDate.minus({ days: 1 });
     setCurrentDate(newCurrentDate);
-    fetchTravelItems().then((newItems: TravelItem[]) => {
-      setTravelItems(newItems);
-    });
+    fetchTravelItems(newCurrentDate.toFormat("yyyyMMdd")).then(
+      (newItems: TravelItem[]) => {
+        setTravelItems(newItems);
+      }
+    );
   }
 
   async function onClickIncrementCurrentDay(): Promise<void> {
     const newCurrentDate = currentDate.plus({ days: 1 });
     setCurrentDate(newCurrentDate);
-    fetchTravelItems().then((newItems: TravelItem[]) => {
-      setTravelItems(newItems);
-    });
+    fetchTravelItems(newCurrentDate.toFormat("yyyyMMdd")).then(
+      (newItems: TravelItem[]) => {
+        setTravelItems(newItems);
+      }
+    );
   }
 
   return (

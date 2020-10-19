@@ -2,6 +2,7 @@
 import { Place, TravelItem, GeolocationError } from "./types";
 import { saveItem, getItems, deleteItem } from "./db";
 
+const USER_ID = "06bab29e-1cd7-4a59-8130-dd3f41db9c49";
 // https://developers.google.com/maps/documentation/javascript/distancematrix#distance_matrix_requests
 export async function getDistance(start: Place, end: Place): Promise<number> {
   return new Promise((resolve) => {
@@ -30,6 +31,15 @@ export async function getDistance(start: Place, end: Place): Promise<number> {
 /* */
 async function getCoordinates(): Promise<Coordinates> {
   return new Promise((resolve, reject) => {
+    // resolve({
+    //   altitude: null,
+    //   altitudeAccuracy: null,
+    //   heading: null,
+    //   speed: null,
+    //   accuracy: 10,
+    //   latitude: 10,
+    //   longitude: 10,
+    // });
     getAccurateCurrentPosition(
       (position: Position) => resolve(position.coords),
       (error: PositionError | Error) => reject(error)
@@ -61,7 +71,7 @@ export async function getPlace(): Promise<Place> {
             .map((addressComponent: any) => addressComponent.long_name)[0];
 
           resolve({
-            name,
+            name: name || "TEST",
             latitude: coords.latitude,
             longitude: coords.longitude,
             accuracy: coords.accuracy,
@@ -72,22 +82,39 @@ export async function getPlace(): Promise<Place> {
   });
 }
 
-export async function fetchTravelItems(): Promise<TravelItem[]> {
-  return getItems<TravelItem>("travelItems");
+export async function fetchTravelItems(
+  effectiveDate: string
+): Promise<TravelItem[]> {
+  return getItems<TravelItem>(
+    `travelItems/${USER_ID}/dates/${effectiveDate}/blah`
+  );
 }
 
 /* */
-export async function saveTravelItem(item: TravelItem): Promise<void> {
+export async function saveTravelItem(
+  item: TravelItem,
+  effectiveDate: string
+): Promise<void> {
   try {
-    await saveItem("travelItems", item.id, item);
+    console.log("saveTraveItem", item);
+    await saveItem(
+      `travelItems/${USER_ID}/dates/${effectiveDate}/blah/${item.id}`,
+      item
+    );
   } catch (e) {
     // TODO
+    console.log(e);
   }
 }
 
-export async function deleteTravelItem(id: string): Promise<void> {
+export async function deleteTravelItem(
+  id: string,
+  effectiveDate: string
+): Promise<void> {
   try {
-    await deleteItem("travelItems", id);
+    await deleteItem(
+      `travelItems/${USER_ID}/dates/${effectiveDate}/blah/${id}`
+    );
   } catch (e) {
     // TODO
   }
@@ -156,7 +183,9 @@ export function getAccurateCurrentPosition(
   function stopTrying(): void {
     navigator.geolocation.clearWatch(watchID);
     geolocationError(
-      new GeolocationError(new Error(`Could not get accurate position: ${lastAccuracy}`))
+      new GeolocationError(
+        new Error(`Could not get accurate position: ${lastAccuracy}`)
+      )
     );
   }
 
@@ -166,4 +195,3 @@ export function getAccurateCurrentPosition(
     geolocationError(new GeolocationError(error));
   }
 }
-

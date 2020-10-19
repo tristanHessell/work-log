@@ -15,28 +15,30 @@ firebase.initializeApp({
 const db = firebase.firestore();
 
 export async function saveItem(
-  collection: string,
-  id: string,
+  documentIdentifier: string,
   item: Record<string, any>
 ): Promise<void> {
   try {
-    await db.collection(collection).doc(id).set(item);
+    await db.doc(documentIdentifier).set(item);
   } catch (err) {
-    // TODO
+    console.log(err);
   }
 }
 
-export async function getItems<T>(collection: string): Promise<T[]> {
-  const snapshot = await db.collection(collection).get();
-  return snapshot.docs.map((doc) => doc.data() as T);
+export async function getItems<T>(collectionIdentifier: string): Promise<T[]> {
+  try {
+    const snapshot = await db.collection(collectionIdentifier).get();
+    return snapshot.docs.map((doc) => doc.data() as T);
+  } catch (err) {
+    // TODO
+    console.log("fetch error");
+    throw err;
+  }
 }
 
-export async function deleteItem(
-  collection: string,
-  id: string
-): Promise<void> {
+export async function deleteItem(documentIdentifier: string): Promise<void> {
   try {
-    await db.collection(collection).doc(id).delete();
+    await db.doc(documentIdentifier).delete();
   } catch (err) {
     // TODO
   }
