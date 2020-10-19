@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import React, { useState, useRef, useEffect } from "react";
 import { v4 as uuid } from "uuid";
-import { Place, TravelItem } from "./types";
+import { Place, TravelItem, GeolocationError } from "./types";
 import {
   getPlace,
   getDistance,
@@ -27,9 +27,9 @@ interface PlaceProps {
 }
 
 const PlaceInput: React.FC<PlaceProps> = ({ itemMeta, children }) => {
-  switch(itemMeta.type) {
+  switch (itemMeta.type) {
     case "Loading": {
-      return <>LOADING</>
+      return <>LOADING</>;
     }
     case "Entity": {
       return <>{children}</>;
@@ -40,35 +40,49 @@ const PlaceInput: React.FC<PlaceProps> = ({ itemMeta, children }) => {
   }
 };
 
-function errorReplacer (key: string, value: unknown): unknown | Record<string, unknown> {
-    if (value instanceof Error) {
-      const error: Record<string, unknown> = {};
+function errorReplacer(
+  key: string,
+  value: unknown
+): unknown | Record<string, unknown> {
+  if (value instanceof GeolocationError) {
+    const error: Record<string, unknown> = {};
 
-        Object.getOwnPropertyNames(value).forEach(function (key) {
-          //@ts-ignore
-          error[key] = value[key];
-        });
+    Object.getOwnPropertyNames(value).forEach(function (key) {
+      //@ts-ignore
+      error[key] = value[key];
+    });
 
-        return error;
-    }
+    return error;
+  }
 
-    return value;
+  return value;
 }
 
 const DEFAULT_REQUESTED: Requested<Place> = { type: "Entity" };
+
+function getFromLocalStorage<T extends Record<string, unknown>> (key: string) : T | null {
+  const item = localStorage.getItem(key);
+  if (item) {
+    return JSON.parse(item) as T;
+  }
+
+  return null;
+}
 
 function App(): JSX.Element {
   const [currentDate, setCurrentDate] = useState<DateTime>(() =>
     DateTime.local()
   );
   const [travelItems, setTravelItems] = useState<TravelItem[]>([]);
-  const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>({
+  const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>(getFromLocalStorage<Partial<TravelItem>>('currentItem') || {
     id: uuid(),
     startingOdometer: 0,
   });
   const startingOdoRef = useRef<HTMLInputElement>(null);
   const isTodaysDate = Math.abs(currentDate.diffNow("days").days) < 1;
-  const [startState, setStartState] = useState<Requested<Place>>(DEFAULT_REQUESTED);
+  const [startState, setStartState] = useState<Requested<Place>>(
+    DEFAULT_REQUESTED
+  );
   const [endState, setEndState] = useState<Requested<Place>>(DEFAULT_REQUESTED);
 
   function onClickDeleteItem(e: any, item: TravelItem): void {
@@ -88,6 +102,7 @@ function App(): JSX.Element {
       id: item.id,
       startingOdometer: 0,
     });
+    localStorage.removeItem("currentItem");
     setStartState(DEFAULT_REQUESTED);
     setEndState(DEFAULT_REQUESTED);
     startingOdoRef.current?.focus();
@@ -105,6 +120,7 @@ function App(): JSX.Element {
 
     saveTravelItem(item).then(() => {
       // TODO
+      localStorage.removeItem("currentItem");
     });
   }
 
@@ -112,10 +128,12 @@ function App(): JSX.Element {
     e: any,
     item: Partial<TravelItem>
   ): Promise<void> {
-    setCurrentItem({
+    const newItem = {
       ...item,
       startingOdometer: +e.target.value,
-    });
+    };
+    setCurrentItem(newItem);
+    localStorage.setItem("currentItem", JSON.stringify(newItem));
   }
 
   async function onClickStartPlace(
@@ -125,12 +143,13 @@ function App(): JSX.Element {
     try {
       setStartState({ type: "Loading" });
       const start = await getPlace();
-
-      setCurrentItem({
+      const newItem = {
         ...item,
         start,
-      });
+      };
       setStartState({ type: "Entity", entity: start });
+      setCurrentItem(newItem);
+      localStorage.setItem("currentItem", JSON.stringify(newItem));
     } catch (err) {
       console.log(err, JSON.stringify(err));
       setStartState({ type: "Error", error: err });
@@ -146,12 +165,14 @@ function App(): JSX.Element {
       const end = await getPlace();
       const distance = await getDistance(item.start as Place, end);
 
-      setCurrentItem({
+      const newItem = {
         ...item,
         end,
         distance,
-      });
+      };
       setEndState({ type: "Entity", entity: end });
+      setCurrentItem(newItem);
+      localStorage.setItem("currentItem", JSON.stringify(newItem));
     } catch (err) {
       setEndState({ type: "Error", error: err });
     }
@@ -216,14 +237,22 @@ function App(): JSX.Element {
         >
           Get Start Location
         </button>
-        <PlaceInput itemMeta={startState} >
-      <input value={currentItem.start?.name || ""} placeholder="Start Location" readOnly />
-      </PlaceInput>
+        <PlaceInput itemMeta={startState}>
+          <input
+            value={currentItem.start?.name || ""}
+            placeholder="Start Location"
+            readOnly
+          />
+        </PlaceInput>
         <button onClick={(e: any): unknown => onClickEndPlace(e, currentItem)}>
           Get End Location
         </button>
-        <PlaceInput itemMeta={endState} >
-      <input value={currentItem.end?.name || ""} placeholder="End Location" readOnly />
+        <PlaceInput itemMeta={endState}>
+          <input
+            value={currentItem.end?.name || ""}
+            placeholder="End Location"
+            readOnly
+          />
         </PlaceInput>
         <input value={currentItem.distance || 0} readOnly />
         <button onClick={(e): unknown => onClickClearCurrent(e, currentItem)}>

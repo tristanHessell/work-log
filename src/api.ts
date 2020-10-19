@@ -1,5 +1,5 @@
 /* globals google */
-import { Place, TravelItem } from "./types";
+import { Place, TravelItem, GeolocationError } from "./types";
 import { saveItem, getItems, deleteItem } from "./db";
 
 // https://developers.google.com/maps/documentation/javascript/distancematrix#distance_matrix_requests
@@ -102,7 +102,7 @@ type AccuratePositionOptions = PositionOptions & {
 function getAccuratePositionOptions(
   options: Partial<AccuratePositionOptions>
 ): AccuratePositionOptions {
-  const maxWait = options.maxWait || 6000;
+  const maxWait = options.maxWait || 30000;
   return {
     ...options,
     maxWait,
@@ -155,12 +155,15 @@ export function getAccurateCurrentPosition(
   // if you cant get a location within the correct range
   function stopTrying(): void {
     navigator.geolocation.clearWatch(watchID);
-    geolocationError(new Error(`Could not get accurate position: ${lastAccuracy}`));
+    geolocationError(
+      new GeolocationError(new Error(`Could not get accurate position: ${lastAccuracy}`))
+    );
   }
 
   function onError(error: PositionError): void {
     clearTimeout(timerID);
     navigator.geolocation.clearWatch(watchID);
-    geolocationError(error);
+    geolocationError(new GeolocationError(error));
   }
 }
+

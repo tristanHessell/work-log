@@ -13,3 +13,12 @@ export interface TravelItem {
   distance?: number;
   createdDate: string; // effective date YYYYMMDD
 }
+
+export class GeolocationError extends Error {
+  public code: number;
+  constructor(err: any) {
+    super(err);
+    this.code = err.code;
+    this.message = err.message;
+  }
+}
