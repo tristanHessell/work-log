@@ -22,6 +22,7 @@ export async function saveItem(
     await db.doc(documentIdentifier).set(item);
   } catch (err) {
     console.log(err);
+    throw err;
   }
 }
 
@@ -30,7 +31,6 @@ export async function getItems<T>(collectionIdentifier: string): Promise<T[]> {
     const snapshot = await db.collection(collectionIdentifier).get();
     return snapshot.docs.map((doc) => doc.data() as T);
   } catch (err) {
-    // TODO
     console.log("fetch error");
     throw err;
   }
@@ -40,6 +40,7 @@ export async function deleteItem(documentIdentifier: string): Promise<void> {
   try {
     await db.doc(documentIdentifier).delete();
   } catch (err) {
-    // TODO
+    console.log("delete error");
+    throw err;
   }
 }

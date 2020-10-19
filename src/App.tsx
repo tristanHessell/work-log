@@ -176,9 +176,10 @@ function App(): JSX.Element {
     }
   }
 
-  //start with the focus on the starting odometer input
   useEffect(() => {
+    //start with the focus on the starting odometer input
     startingOdoRef.current?.focus();
+    // get the items
     fetchTravelItems(DateTime.local().toFormat("yyyyMMdd")).then(
       (newItems: TravelItem[]) => {
         setTravelItems(newItems);

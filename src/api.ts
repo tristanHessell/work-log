@@ -31,18 +31,16 @@ export async function getDistance(start: Place, end: Place): Promise<number> {
 /* */
 async function getCoordinates(): Promise<Coordinates> {
   return new Promise((resolve, reject) => {
-    // resolve({
-    //   altitude: null,
-    //   altitudeAccuracy: null,
-    //   heading: null,
-    //   speed: null,
-    //   accuracy: 10,
-    //   latitude: 10,
-    //   longitude: 10,
-    // });
     getAccurateCurrentPosition(
       (position: Position) => resolve(position.coords),
-      (error: PositionError | Error) => reject(error)
+      (error: PositionError | Error) => reject(error),
+      // if we are not in production, dont wait for ages
+      process.env.NODE_ENV !== "production"
+        ? {
+            failOnInaccurate: false,
+            maxWait: 1000,
+          }
+        : undefined
     );
   });
 }
@@ -51,7 +49,6 @@ async function getCoordinates(): Promise<Coordinates> {
 /* */
 export async function getPlace(): Promise<Place> {
   const coords = await getCoordinates();
-
   return new Promise((resolve) => {
     const geocoder: google.maps.Geocoder = new google.maps.Geocoder();
 
@@ -96,14 +93,13 @@ export async function saveTravelItem(
   effectiveDate: string
 ): Promise<void> {
   try {
-    console.log("saveTraveItem", item);
     await saveItem(
       `travelItems/${USER_ID}/dates/${effectiveDate}/blah/${item.id}`,
       item
     );
   } catch (e) {
-    // TODO
     console.log(e);
+    throw e;
   }
 }
 
@@ -116,7 +112,8 @@ export async function deleteTravelItem(
       `travelItems/${USER_ID}/dates/${effectiveDate}/blah/${id}`
     );
   } catch (e) {
-    // TODO
+    console.log(e);
+    throw e;
   }
 }
 
@@ -124,6 +121,9 @@ type AccuratePositionOptions = PositionOptions & {
   maxWait: number;
   timeout: number;
   accuracy: number;
+  // fail if you get to the timeout and we haven't found
+  // an accurate result
+  failOnInaccurate: boolean;
 };
 
 function getAccuratePositionOptions(
@@ -136,7 +136,8 @@ function getAccuratePositionOptions(
     timeout: options.timeout || maxWait,
     accuracy: options.accuracy || 20,
     maximumAge: 0,
-    enableHighAccuracy: true,
+    failOnInaccurate:
+      options.failOnInaccurate === undefined ? true : options.failOnInaccurate,
   };
 }
 
@@ -150,6 +151,7 @@ export function getAccurateCurrentPosition(
 ): void {
   let locationEventCount = 0;
   let lastAccuracy = 0;
+  let lastFoundPosition: Position;
 
   const options = getAccuratePositionOptions(opts);
 
@@ -160,33 +162,36 @@ export function getAccurateCurrentPosition(
   );
   const timerID = setTimeout(stopTrying, options.maxWait); // Set a timeout that will abandon the location loop
 
-  function foundPosition(position: Position): void {
-    geolocationSuccess(position);
-  }
-
   function checkLocation(position: Position): void {
     locationEventCount = locationEventCount + 1;
-    // We ignore the first event unless it's the only one received because some devices seem to send a cached
+    // We ignore the first event unless it's the only
+    // one received because some devices seem to send a cached
     // location even when maximumAge is set to zero
     lastAccuracy = position.coords.accuracy;
+    lastFoundPosition = position;
     if (
       position.coords.accuracy <= options.accuracy &&
       locationEventCount > 1
     ) {
       clearTimeout(timerID);
       navigator.geolocation.clearWatch(watchID);
-      foundPosition(position);
+      geolocationSuccess(position);
     }
   }
 
   // if you cant get a location within the correct range
   function stopTrying(): void {
     navigator.geolocation.clearWatch(watchID);
-    geolocationError(
-      new GeolocationError(
-        new Error(`Could not get accurate position: ${lastAccuracy}`)
-      )
-    );
+    if (options.failOnInaccurate) {
+      geolocationError(
+        new GeolocationError(
+          new Error(`Could not get accurate position: ${lastAccuracy}`)
+        )
+      );
+      return;
+    }
+
+    geolocationSuccess(lastFoundPosition);
   }
 
   function onError(error: PositionError): void {
