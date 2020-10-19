@@ -122,6 +122,7 @@ export function getAccurateCurrentPosition(
   opts: Partial<AccuratePositionOptions> = {}
 ): void {
   let locationEventCount = 0;
+  let lastAccuracy = 0;
 
   const options = getAccuratePositionOptions(opts);
 
@@ -140,6 +141,7 @@ export function getAccurateCurrentPosition(
     locationEventCount = locationEventCount + 1;
     // We ignore the first event unless it's the only one received because some devices seem to send a cached
     // location even when maximumAge is set to zero
+    lastAccuracy = position.coords.accuracy;
     if (
       position.coords.accuracy <= options.accuracy &&
       locationEventCount > 1
@@ -153,7 +155,7 @@ export function getAccurateCurrentPosition(
   // if you cant get a location within the correct range
   function stopTrying(): void {
     navigator.geolocation.clearWatch(watchID);
-    geolocationError(new Error("could not get accurate position"));
+    geolocationError(new Error(`Could not get accurate position: ${lastAccuracy}`));
   }
 
   function onError(error: PositionError): void {
