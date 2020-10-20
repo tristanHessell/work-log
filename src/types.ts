@@ -22,3 +22,8 @@ export class GeolocationError extends Error {
     this.message = err.message;
   }
 }
+
+export type Requested<E = Error> =
+  | { type: "Entity" }
+  | { type: "Loading" }
+  | { type: "Error"; error: E };
