@@ -1,14 +1,25 @@
 import React from "react";
-import firebase from "firebase";
-import * as firebaseui from "firebaseui";
+import { Redirect } from 'react-router-dom';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+import { isAuthenticated } from './utils';
+import { firebase, auth } from './firebase';
 
 const uiConfig = {
+  signInFlow: 'popup',
   signInOptions: [
     firebase.auth.GoogleAuthProvider.PROVIDER_ID,
     firebase.auth.FacebookAuthProvider.PROVIDER_ID,
     firebase.auth.TwitterAuthProvider.PROVIDER_ID,
   ],
+  signInSuccessUrl: '/',
 };
 
-const ui = new firebaseui.auth.AuthUI(firebase.auth());
-// ui.start();
+export const SignIn: React.FC = () => {
+  if (isAuthenticated()) {
+    return <Redirect to="/" />;
+  }
+
+  return <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={auth} />
+};
+
+

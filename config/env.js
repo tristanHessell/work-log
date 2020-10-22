@@ -84,6 +84,7 @@ function getClientEnvironment(publicUrl) {
         WDS_SOCKET_PATH: process.env.WDS_SOCKET_PATH,
         WDS_SOCKET_PORT: process.env.WDS_SOCKET_PORT,
         GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
+        GOOGLE_FIRESTORE_API_KEY: process.env.GOOGLE_FIRESTORE_API_KEY,
       }
     );
   // Stringify all values so we can feed into webpack DefinePlugin

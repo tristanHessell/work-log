@@ -9,6 +9,8 @@ interface Props {
   onComplete: (place: Place) => void;
 }
 
+  const DEFAULT_ITEM_META: Requested<Place> = { type: "Entity" };
+
 export const PlaceInput: React.FC<Props> = ({
   getter,
   onComplete,
@@ -16,7 +18,6 @@ export const PlaceInput: React.FC<Props> = ({
   input,
   place,
 }) => {
-  const DEFAULT_ITEM_META: Requested<Place> = { type: "Entity" };
   const [itemMeta, setItemMeta] = useState<Requested<Place>>(DEFAULT_ITEM_META);
 
   const onClickTrigger = async (): Promise<void> => {

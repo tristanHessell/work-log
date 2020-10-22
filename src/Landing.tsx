@@ -1,6 +1,7 @@
 import React from 'react';
+import { SignIn } from './Auth';
 
 export const Landing: React.FC = () => {
-  return <div>landing</div>;
+  return <div><SignIn /></div>;
 };
 

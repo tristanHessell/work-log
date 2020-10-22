@@ -1,18 +1,4 @@
-import * as firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/database";
-
-firebase.initializeApp({
-  apiKey: "AIzaSyCO10y5bbOPzmgPypyjwS5HkogHwd0iRHvU",
-  authDomain: "totemic-polygon-291511.firebaseapp.com",
-  databaseURL: "https://totemic-polygon-291511.firebaseio.com",
-  projectId: "totemic-polygon-291511",
-  storageBucket: "totemic-polygon-291511.appspot.com",
-  messagingSenderId: "987927113868",
-  appId: "1:987927113868:web:64e80b9823e9873c938ba9",
-});
-
-const db = firebase.firestore();
+import { db } from './firebase';
 
 export async function saveItem(
   documentIdentifier: string,
