@@ -1,8 +1,8 @@
 import { db } from "./firebase";
 
-export async function saveItem(
+export async function saveItem<T>(
   documentIdentifier: string,
-  item: Record<string, any>
+  item: T,
 ): Promise<void> {
   try {
     await db.doc(documentIdentifier).set(item);

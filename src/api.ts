@@ -62,10 +62,10 @@ export async function getPlace(): Promise<Place> {
       ) => {
         if (status === "OK") {
           const name = results[0].address_components
-            .filter((addressComponent: any) =>
+            .filter((addressComponent: google.maps.GeocoderAddressComponent) =>
               addressComponent.types.includes("locality")
             )
-            .map((addressComponent: any) => addressComponent.long_name)[0];
+            .map((addressComponent: google.maps.GeocoderAddressComponent) => addressComponent.long_name)[0];
 
           resolve({
             name: name || "TEST",

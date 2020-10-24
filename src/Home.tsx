@@ -40,7 +40,7 @@ export const Home = (): JSX.Element => {
     });
   }
 
-  function onClickClearCurrent(e: any, item: Partial<TravelItem>): void {
+  function onClickClearCurrent(e: React.MouseEvent, item: Partial<TravelItem>): void {
     setCurrentItem({
       id: item.id,
       startingOdometer: 0,
@@ -49,7 +49,7 @@ export const Home = (): JSX.Element => {
     startingOdoRef.current?.focus();
   }
 
-  function onClickAddNew(e: any, item: TravelItem): void {
+  function onClickAddNew(e: React.MouseEvent, item: TravelItem): void {
     // add the currrent item to the list
     setTravelItems([...travelItems, item]);
     // change he current item to a new one
@@ -65,7 +65,7 @@ export const Home = (): JSX.Element => {
   }
 
   async function onChangeOdometer(
-    e: any,
+    e: React.ChangeEvent<HTMLInputElement>,
     item: Partial<TravelItem>
   ): Promise<void> {
     const newItem = {
@@ -167,12 +167,12 @@ export const Home = (): JSX.Element => {
           )}
         />
         <input value={currentItem.distance || 0} readOnly />
-        <button onClick={(e): unknown => onClickClearCurrent(e, currentItem)}>
+        <button onClick={(e) => onClickClearCurrent(e, currentItem)}>
           Clear
         </button>
       </div>
       <button
-        onClick={(e: any): unknown =>
+        onClick={(e) =>
           onClickAddNew(e, currentItem as TravelItem)
         }
         disabled={!currentItem.start || !currentItem.end}

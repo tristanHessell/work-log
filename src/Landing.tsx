@@ -3,8 +3,6 @@ import { SignIn } from "./Auth";
 
 export const Landing: React.FC = () => {
   return (
-    <div>
       <SignIn />
-    </div>
   );
 };
