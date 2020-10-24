@@ -1,4 +1,4 @@
-import { auth } from './firebase';
+import { auth } from "./firebase";
 import { GeolocationError } from "./types";
 
 export function errorReplacer(
@@ -29,7 +29,6 @@ export function getFromLocalStorage<T extends Record<string, unknown>>(
   return null;
 }
 
-export function isAuthenticated (): boolean {
+export function isAuthenticated(): boolean {
   return !!auth.currentUser?.email;
 }
-

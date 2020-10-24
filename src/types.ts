@@ -15,10 +15,11 @@ export interface TravelItem {
 }
 
 export class GeolocationError extends Error {
-  public code: number;
-  constructor(err: any) {
-    super(err);
-    this.code = err.code;
+  public code: number | null;
+
+  constructor(err: Error | PositionError) {
+    super(err.message);
+    this.code = "code" in err ? err.code : null;
     this.message = err.message;
   }
 }

@@ -141,8 +141,6 @@ function getAccuratePositionOptions(
   };
 }
 
-type GenericErrorHandler = (error: Error) => void;
-
 // https://github.com/gregsramblings/getAccurateCurrentPosition/blob/master/geo.js
 export function getAccurateCurrentPosition(
   geolocationSuccess: PositionCallback,

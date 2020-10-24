@@ -9,7 +9,7 @@ interface Props {
   onComplete: (place: Place) => void;
 }
 
-  const DEFAULT_ITEM_META: Requested<Place> = { type: "Entity" };
+const DEFAULT_ITEM_META: Requested<Place> = { type: "Entity" };
 
 export const PlaceInput: React.FC<Props> = ({
   getter,

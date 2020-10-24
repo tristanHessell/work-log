@@ -182,5 +182,4 @@ export const Home = (): JSX.Element => {
       Current:<pre>{JSON.stringify(currentItem, errorReplacer, 2)}</pre>
     </div>
   );
-}
-
+};
