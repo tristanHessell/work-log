@@ -4,7 +4,7 @@ import { Place, TravelItem } from "./types";
 import { PlaceInput } from "./PlaceInput";
 import { DatePicker } from "./DatePicker";
 import { TravelItemTable } from "./TravelItemTable";
-import { getFromLocalStorage, errorReplacer } from "./utils";
+import { getFromLocalStorage } from "./utils";
 import {
   getPlace,
   getDistance,
@@ -13,20 +13,32 @@ import {
   fetchTravelItems,
 } from "./api";
 import { DateTime } from "luxon";
-import "./App.css";
+
+function getEndOdometer (item: Partial<TravelItem>): number {
+  return item.start && item.end ? (item?.distance || 0) + (item.startingOdometer || 0) : 0;
+}
 
 export const Home = (): JSX.Element => {
-  const [currentDate, setCurrentDate] = useState<DateTime>(() =>
-    DateTime.local()
-  );
+  const [currentDate, setCurrentDate] = useState<DateTime>(() => {
+    const storedDateString = getFromLocalStorage<string>("currentDate");
+
+    if (storedDateString) {
+      return DateTime.fromISO(storedDateString);
+    }
+
+    return DateTime.local();
+  });
   const [travelItems, setTravelItems] = useState<TravelItem[]>([]);
   const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>(
-    getFromLocalStorage<Partial<TravelItem>>("currentItem") || {
-      id: uuid(),
-      startingOdometer: 0,
-    }
+    () =>
+      getFromLocalStorage<Partial<TravelItem>>("currentItem") || {
+        id: uuid(),
+        startingOdometer: 0,
+      }
   );
   const startingOdoRef = useRef<HTMLInputElement>(null);
+
+  const isTodaysDate = Math.abs(currentDate.diffNow("days").days) < 1;
 
   function onDeleteTravelItem(item: TravelItem): void {
     const itemIndex = travelItems.indexOf(item);
@@ -40,7 +52,10 @@ export const Home = (): JSX.Element => {
     });
   }
 
-  function onClickClearCurrent(e: React.MouseEvent, item: Partial<TravelItem>): void {
+  function onClickClearCurrent(
+    e: React.MouseEvent,
+    item: Partial<TravelItem>
+  ): void {
     setCurrentItem({
       id: item.id,
       startingOdometer: 0,
@@ -102,7 +117,7 @@ export const Home = (): JSX.Element => {
     //start with the focus on the starting odometer input
     startingOdoRef.current?.focus();
     // get the items
-    fetchTravelItems(DateTime.local().toFormat("yyyyMMdd")).then(
+    fetchTravelItems(currentDate.toFormat("yyyyMMdd")).then(
       (newItems: TravelItem[]) => {
         setTravelItems(newItems);
       }
@@ -111,15 +126,20 @@ export const Home = (): JSX.Element => {
 
   async function onChangeDate(date: DateTime): Promise<void> {
     setCurrentDate(date);
+    setTravelItems([]);
     fetchTravelItems(date.toFormat("yyyyMMdd")).then(
       (newItems: TravelItem[]) => {
         setTravelItems(newItems);
       }
     );
+    localStorage.setItem(
+      "currentDate",
+      JSON.stringify(date.toFormat("yyyyMMdd"))
+    );
   }
 
   return (
-    <div className="App">
+    <div className="home">
       <DatePicker currentDate={currentDate} onChange={onChangeDate} />
       <TravelItemTable
         travelItems={travelItems}
@@ -127,6 +147,7 @@ export const Home = (): JSX.Element => {
       />
       <div>
         <input
+          className="start-odo"
           ref={startingOdoRef}
           type="number"
           min="0"
@@ -141,10 +162,13 @@ export const Home = (): JSX.Element => {
           getter={getPlace}
           onComplete={onClickStartPlace}
           trigger={(onClick: () => void): React.ReactNode => (
-            <button onClick={onClick}>Get Start Location</button>
+            <button className="start-location-btn" onClick={onClick}>
+              Get Start
+            </button>
           )}
           input={(place?: Place): React.ReactNode => (
             <input
+              className="start-location-input"
               value={place?.name || ""}
               placeholder="Start Location"
               readOnly
@@ -156,30 +180,42 @@ export const Home = (): JSX.Element => {
           getter={getPlace}
           onComplete={onClickEndPlace}
           trigger={(onClick: () => void): React.ReactNode => (
-            <button onClick={onClick}>Get end location</button>
+            <button className="end-location-btn" onClick={onClick}>
+              End location
+            </button>
           )}
           input={(place?: Place): React.ReactNode => (
             <input
+              className="end-location-input"
               value={place?.name || ""}
               placeholder="End Location"
               readOnly
             />
           )}
         />
-        <input value={currentItem.distance || 0} readOnly />
-        <button onClick={(e) => onClickClearCurrent(e, currentItem)}>
+        <input
+          className="distance"
+          value={currentItem.distance || 0}
+          readOnly
+        />
+        <input
+          className="end-odo"
+          value={getEndOdometer(currentItem)}
+          readOnly
+        />
+        <button
+          className="clear-btn"
+          onClick={(e) => onClickClearCurrent(e, currentItem)}
+        >
           Clear
         </button>
       </div>
       <button
-        onClick={(e) =>
-          onClickAddNew(e, currentItem as TravelItem)
-        }
-        disabled={!currentItem.start || !currentItem.end}
+        onClick={(e) => onClickAddNew(e, currentItem as TravelItem)}
+        disabled={!isTodaysDate || !currentItem.start || !currentItem.end}
       >
         (Save and) Start new
       </button>
-      Current:<pre>{JSON.stringify(currentItem, errorReplacer, 2)}</pre>
     </div>
   );
 };

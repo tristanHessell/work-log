@@ -20,7 +20,7 @@ export const DatePicker: React.FC<Props> = ({ currentDate, onChange }) => {
   }
 
   return (
-    <div>
+    <div className="date-picker">
       <button onClick={onClickDecrementCurrentDay}>&lt;</button>
       {currentDate.toLocaleString()}
       <button onClick={onClickIncrementCurrentDay} disabled={isTodaysDate}>

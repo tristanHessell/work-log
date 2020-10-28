@@ -4,7 +4,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { Home } from "./Home";
 import { Landing } from "./Landing";
 import { AuthHandler } from "./AuthHandler";
-import "./App.css";
+import "./App.scss";
 
 function App(): JSX.Element {
   return (

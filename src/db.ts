@@ -2,7 +2,7 @@ import { db } from "./firebase";
 
 export async function saveItem<T>(
   documentIdentifier: string,
-  item: T,
+  item: T
 ): Promise<void> {
   try {
     await db.doc(documentIdentifier).set(item);

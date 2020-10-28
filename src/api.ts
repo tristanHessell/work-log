@@ -21,7 +21,11 @@ export async function getDistance(start: Place, end: Place): Promise<number> {
         status: google.maps.DistanceMatrixStatus
       ) => {
         if (status === "OK") {
-          resolve(response.rows[0].elements[0].distance.value);
+          // the API returns the distance in meters
+          const meters = response.rows[0].elements[0].distance.value;
+          const kilometers = Math.round((meters / 1000));
+
+          resolve(kilometers);
         }
       }
     );
@@ -65,7 +69,10 @@ export async function getPlace(): Promise<Place> {
             .filter((addressComponent: google.maps.GeocoderAddressComponent) =>
               addressComponent.types.includes("locality")
             )
-            .map((addressComponent: google.maps.GeocoderAddressComponent) => addressComponent.long_name)[0];
+            .map(
+              (addressComponent: google.maps.GeocoderAddressComponent) =>
+                addressComponent.long_name
+            )[0];
 
           resolve({
             name: name || "TEST",

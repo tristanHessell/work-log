@@ -18,9 +18,7 @@ export function errorReplacer(
   return value;
 }
 
-export function getFromLocalStorage<T extends Record<string, unknown>>(
-  key: string
-): T | null {
+export function getFromLocalStorage<T>(key: string): T | null {
   const item = localStorage.getItem(key);
   if (item) {
     return JSON.parse(item) as T;

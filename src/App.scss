@@ -1,0 +1,64 @@
+#root {
+  display: flex;
+  justify-content: center;
+}
+
+.date-picker {
+  display: flex;
+  justify-content: center;
+}
+
+.travel-item-table {
+  .title-bar {
+    & > div {
+      display: inline-block;
+    }
+  }
+
+  input {
+    box-sizing: border-box;
+  }
+
+  .start-odo,
+  .end-odo,
+  .distance {
+    width: 100px;
+  }
+
+  .start-location,
+  .end-location {
+    width: 250px;
+  }
+
+  .delete-btn {
+    width: 50px;
+  }
+}
+
+.home {
+  input {
+    box-sizing: border-box;
+  }
+
+  .start-odo, .end-odo {
+    width: 100px;
+  }
+
+  .start-location-btn,
+  .end-location-btn {
+    width: 100px;
+  }
+
+  .start-location-input,
+  .end-location-input {
+    width: 150px;
+  }
+
+  .distance {
+    width: 100px;
+  }
+
+  .clear-btn {
+    width: 50px;
+  }
+}
