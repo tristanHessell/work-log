@@ -1,17 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { Place, TravelItem } from "./types";
 import { PlaceInput } from "./PlaceInput";
-import { DatePicker } from "./DatePicker";
-import { TravelItemTable } from "./TravelItemTable";
 import { getFromLocalStorage } from "./utils";
-import {
-  getPlace,
-  getDistance,
-  deleteTravelItem,
-  saveTravelItem,
-  fetchTravelItems,
-} from "./api";
+import { getPlace, getDistance, saveTravelItem } from "./api";
 import { DateTime } from "luxon";
 
 function getEndOdometer(item: Partial<TravelItem>): number {
@@ -21,16 +14,6 @@ function getEndOdometer(item: Partial<TravelItem>): number {
 }
 
 export const Home = (): JSX.Element => {
-  const [currentDate, setCurrentDate] = useState<DateTime>(() => {
-    const storedDateString = getFromLocalStorage<string>("currentDate");
-
-    if (storedDateString) {
-      return DateTime.fromISO(storedDateString);
-    }
-
-    return DateTime.local();
-  });
-  const [travelItems, setTravelItems] = useState<TravelItem[]>([]);
   const [currentItem, setCurrentItem] = useState<Partial<TravelItem>>(
     () =>
       getFromLocalStorage<Partial<TravelItem>>("currentItem") || {
@@ -39,20 +22,6 @@ export const Home = (): JSX.Element => {
       }
   );
   const startingOdoRef = useRef<HTMLInputElement>(null);
-
-  const isTodaysDate = Math.abs(currentDate.diffNow("days").days) < 1;
-
-  function onDeleteTravelItem(item: TravelItem): void {
-    const itemIndex = travelItems.indexOf(item);
-    setTravelItems([
-      ...travelItems.slice(0, itemIndex),
-      ...travelItems.slice(itemIndex + 1),
-    ]);
-
-    deleteTravelItem(item.id, currentDate.toFormat("yyyyMMdd")).then(() => {
-      // TODO
-    });
-  }
 
   function onClickClearCurrent(
     e: React.MouseEvent,
@@ -67,8 +36,6 @@ export const Home = (): JSX.Element => {
   }
 
   function onClickAddNew(e: React.MouseEvent, item: TravelItem): void {
-    // add the currrent item to the list
-    setTravelItems([...travelItems, item]);
     // change he current item to a new one
     setCurrentItem({
       id: uuid(),
@@ -118,35 +85,10 @@ export const Home = (): JSX.Element => {
   useEffect(() => {
     //start with the focus on the starting odometer input
     startingOdoRef.current?.focus();
-    // get the items
-    fetchTravelItems(currentDate.toFormat("yyyyMMdd")).then(
-      (newItems: TravelItem[]) => {
-        setTravelItems(newItems);
-      }
-    );
   }, []);
-
-  async function onChangeDate(date: DateTime): Promise<void> {
-    setCurrentDate(date);
-    setTravelItems([]);
-    fetchTravelItems(date.toFormat("yyyyMMdd")).then(
-      (newItems: TravelItem[]) => {
-        setTravelItems(newItems);
-      }
-    );
-    localStorage.setItem(
-      "currentDate",
-      JSON.stringify(date.toFormat("yyyyMMdd"))
-    );
-  }
 
   return (
     <div className="home">
-      <DatePicker currentDate={currentDate} onChange={onChangeDate} />
-      {/*<TravelItemTable
-        travelItems={travelItems}
-        onDelete={onDeleteTravelItem}
-        /> */}
       <div className="item-entry">
         <div className="lstart-odo">Start Odo</div>
         <div className="lstart-location">Start</div>
@@ -222,10 +164,11 @@ export const Home = (): JSX.Element => {
       </div>
       <button
         onClick={(e) => onClickAddNew(e, currentItem as TravelItem)}
-        disabled={!isTodaysDate || !currentItem.start || !currentItem.end}
+        disabled={!currentItem.start || !currentItem.end}
       >
         (Save and) Start new
       </button>
+      <Link to="list/">List</Link>
     </div>
   );
 };
