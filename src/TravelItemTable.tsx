@@ -37,11 +37,11 @@ export const TravelItemTable: React.FC<Props> = ({ travelItems, onDelete }) => {
             value={item.end.name}
             readOnly
           />
-        <input
-          className="end-odo"
-          value={(item.distance || 0) + (item.startingOdometer || 0)}
-          readOnly
-        />
+          <input
+            className="end-odo"
+            value={(item.distance || 0) + (item.startingOdometer || 0)}
+            readOnly
+          />
           <input className="distance" disabled value={item.distance} readOnly />
           <button
             className="delete-btn"

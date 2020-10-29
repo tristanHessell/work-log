@@ -35,30 +35,125 @@
   }
 }
 
-.home {
+.item-entry {
+  display: grid;
+
+  .start-location {
+    display: flex;
+  }
+
+  .end-location {
+    display: flex;
+  }
+
+  @media (min-width: 800px) {
+    grid-template-areas:
+      "startOdoLabel startLabel endLabel endOdoLabel distanceLabel actionCol"
+      "startOdo start end endOdo distance action";
+    grid-template-columns: 100px 200px 200px 100px 100px;
+
+    .start-location-input {
+      width: 100px;
+    }
+
+    .start-location-btn {
+      width: 100px;
+    }
+
+    .end-location-input {
+      width: 100px;
+    }
+
+    .end-location-btn {
+      width: 100px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    width: 100%;
+
+    grid-template-areas:
+      "startOdoLabel"
+      "startOdo"
+      "startLabel"
+      "start"
+      "endLabel"
+      "end"
+      "endOdoLabel"
+      "endOdo"
+      "distanceLabel"
+      "distance"
+      "actionCol"
+      "action";
+
+    .start-location-input {
+      flex: 1;
+    }
+
+    .start-location-btn {
+      width: 100px;
+    }
+
+    .end-location-input {
+      flex: 1;
+    }
+
+    .end-location-btn {
+      width: 100px;
+    }
+  }
+  .lstart-odo {
+    grid-area: startOdoLabel;
+  }
+  .lstart-location {
+    grid-area: startLabel;
+  }
+  .lend-location {
+    grid-area: endLabel;
+  }
+  .lend-odo {
+    grid-area: endOdoLabel;
+  }
+
+  .ldistance {
+    grid-area: distanceLabel;
+  }
+
+  .lactioncol {
+    grid-area: actionCol;
+  }
+
+  .delete-btn {
+    width: 50px;
+  }
   input {
     box-sizing: border-box;
   }
 
-  .start-odo, .end-odo {
-    width: 100px;
+  .start-odo {
+    grid-area: startOdo;
+  }
+  .end-odo {
+    grid-area: endOdo;
   }
 
-  .start-location-btn,
-  .end-location-btn {
-    width: 100px;
+  .start-location {
+    grid-area: start;
+  }
+  .end-location {
+    grid-area: end;
   }
 
-  .start-location-input,
+  .start-location-input {
+  }
   .end-location-input {
-    width: 150px;
   }
 
   .distance {
-    width: 100px;
+    grid-area: distance;
   }
 
   .clear-btn {
-    width: 50px;
+    grid-area: action;
   }
 }

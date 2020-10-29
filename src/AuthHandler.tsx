@@ -16,5 +16,5 @@ export const AuthHandler: React.FC<Props> = ({ children }) => {
     return null;
   }
 
-  return <UserContext.Provider value={user}>{children};</UserContext.Provider>;
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
 };

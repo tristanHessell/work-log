@@ -23,7 +23,7 @@ export async function getDistance(start: Place, end: Place): Promise<number> {
         if (status === "OK") {
           // the API returns the distance in meters
           const meters = response.rows[0].elements[0].distance.value;
-          const kilometers = Math.round((meters / 1000));
+          const kilometers = Math.round(meters / 1000);
 
           resolve(kilometers);
         }

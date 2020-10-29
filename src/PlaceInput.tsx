@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Place, Requested } from "./types";
 
 interface Props {
+  className?: string;
   place?: Place;
   trigger: (onClick: () => void) => React.ReactNode;
   input: (place?: Place) => React.ReactNode;
@@ -17,6 +18,7 @@ export const PlaceInput: React.FC<Props> = ({
   trigger,
   input,
   place,
+  className,
 }) => {
   const [itemMeta, setItemMeta] = useState<Requested<Place>>(DEFAULT_ITEM_META);
 
@@ -35,18 +37,18 @@ export const PlaceInput: React.FC<Props> = ({
 
   switch (itemMeta.type) {
     case "Loading": {
-      return <>LOADING {trigger(onClickTrigger)}</>;
+      return <div className={className}>LOADING {trigger(onClickTrigger)}</div>;
     }
     case "Entity": {
       return (
-        <>
+        <div className={className}>
           {input(place)}
           {trigger(onClickTrigger)}
-        </>
+        </div>
       );
     }
     case "Error": {
-      return <>Error {trigger(onClickTrigger)}</>;
+      return <div className={className}>Error {trigger(onClickTrigger)}</div>;
     }
   }
 };

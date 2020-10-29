@@ -14,8 +14,10 @@ import {
 } from "./api";
 import { DateTime } from "luxon";
 
-function getEndOdometer (item: Partial<TravelItem>): number {
-  return item.start && item.end ? (item?.distance || 0) + (item.startingOdometer || 0) : 0;
+function getEndOdometer(item: Partial<TravelItem>): number {
+  return item.start && item.end
+    ? (item?.distance || 0) + (item.startingOdometer || 0)
+    : 0;
 }
 
 export const Home = (): JSX.Element => {
@@ -141,11 +143,17 @@ export const Home = (): JSX.Element => {
   return (
     <div className="home">
       <DatePicker currentDate={currentDate} onChange={onChangeDate} />
-      <TravelItemTable
+      {/*<TravelItemTable
         travelItems={travelItems}
         onDelete={onDeleteTravelItem}
-      />
-      <div>
+        /> */}
+      <div className="item-entry">
+        <div className="lstart-odo">Start Odo</div>
+        <div className="lstart-location">Start</div>
+        <div className="lend-location">End</div>
+        <div className="lend-odo">End Odo</div>
+        <div className="ldistance">Distance</div>
+        <div className="lactioncol"></div>
         <input
           className="start-odo"
           ref={startingOdoRef}
@@ -158,6 +166,7 @@ export const Home = (): JSX.Element => {
           }}
         />
         <PlaceInput
+          className="start-location"
           place={currentItem.start}
           getter={getPlace}
           onComplete={onClickStartPlace}
@@ -176,6 +185,7 @@ export const Home = (): JSX.Element => {
           )}
         />
         <PlaceInput
+          className="end-location"
           place={currentItem.end}
           getter={getPlace}
           onComplete={onClickEndPlace}
