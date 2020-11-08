@@ -89,6 +89,7 @@ export const Home = (): JSX.Element => {
 
   return (
     <div className="home">
+      <Link to="list/">List</Link>
       <div className="item-entry">
         <div className="lstart-odo">Start Odo</div>
         <div className="lstart-location">Start</div>
@@ -168,7 +169,6 @@ export const Home = (): JSX.Element => {
       >
         (Save and) Start new
       </button>
-      <Link to="list/">List</Link>
     </div>
   );
 };

@@ -86,8 +86,13 @@
       "actionCol"
       "action";
 
+    .start-odo {
+      font-size: 1.5rem;
+    }
+
     .start-location-input {
       flex: 1;
+      font-size: 1.5rem;
     }
 
     .start-location-btn {
@@ -96,12 +101,22 @@
 
     .end-location-input {
       flex: 1;
+      font-size: 1.5rem;
+    }
+
+    .end-odo {
+      font-size: 1.5rem;
+    }
+
+    .distance {
+      font-size: 1.5rem;
     }
 
     .end-location-btn {
       width: 100px;
     }
   }
+
   .lstart-odo {
     grid-area: startOdoLabel;
   }
