@@ -9,6 +9,9 @@
 }
 
 .travel-item-table {
+  white-space: nowrap;
+  overflow: auto;
+
   .title-bar {
     & > div {
       display: inline-block;
@@ -173,4 +176,8 @@
   .clear-btn {
     grid-area: action;
   }
+}
+
+.list {
+  overflow-x: auto;
 }
